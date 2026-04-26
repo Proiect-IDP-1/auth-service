@@ -23,8 +23,10 @@ app.post('/auth/register', async (req, res) => {
 			'INSERT INTO users (username, password) VALUES ($1, $2)',
 			[username, hashedPassword]
 		);
+		console.log("Register successful");
 		res.status(201).json({ message: "User registered successfully" });
 	} catch (err) {
+		console.error("Error during registration: ", err);
 		res.status(500).json({ error: "Registration failed" });
 	}
 });
@@ -42,12 +44,15 @@ app.post('/auth/login', async (req, res) => {
 		const user = result.rows[0];
 
 		if (user && await bcrypt.compare(password, user.password)) {
+			console.log("Login successful");
 			const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '1h' });
 			res.json({ token });
 		} else {
+			console.log("Invalid username or password");
 			res.status(401).json({ error: "Invalid username or password" });
 		}
 	} catch (err) {
+		console.error("Error during login: ", err);
 		res.status(500).json({ error: "Login failed" });
 	}
 });
