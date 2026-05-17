@@ -1,10 +1,17 @@
-FROM node:21-alpine3.18
+FROM node:21-alpine
 
-COPY package.json ./package.json
-RUN npm install
+WORKDIR /usr/src/app
 
-COPY server.js /usr/src/app/server.js
+COPY package.json ./
+RUN npm install --omit=dev
+
+COPY server.js ./
+
+RUN apk add --no-cache curl
 
 EXPOSE 3000
 
-CMD ["node", "/usr/src/app/server.js"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+CMD ["node", "server.js"]
